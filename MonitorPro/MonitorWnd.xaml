@@ -1,0 +1,157 @@
+﻿<pu:WindowX
+    x:Class="MonitorPro.MonitorWnd"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+    xmlns:pu="clr-namespace:Panuon.UI.Silver;assembly=Panuon.UI.Silver"
+    xmlns:mapControl="clr-namespace:GMap.NET.WindowsPresentation;assembly=GMap.NET.WindowsPresentation"
+    WindowState="Maximized"
+    pu:WindowXCaption.Height="45"
+    pu:WindowXCaption.Padding="5"
+    pu:WindowXCaption.Foreground="Black"
+    pu:WindowXCaption.Background="AliceBlue"
+    pu:WindowXCaption.Header="摄像头管理系统"
+    DisableForceClosing ="true"
+    FontSize="20"
+    Name="frmWorkstation"
+    >
+    <pu:WindowXCaption.ExtendControl>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+            <CheckBox 
+                Name="Marker"
+                Width="30"
+                FontSize="20"
+                Content="&#xf024;"
+                Background="Transparent"
+                FontFamily="{StaticResource FontAwesome}"
+                Margin="0,2,5,0"
+                Padding="0"
+                pu:CheckBoxHelper.CornerRadius="20"
+                pu:CheckBoxHelper.CheckBoxStyle="Button"
+                pu:CheckBoxHelper.HeaderWidth="0"
+                pu:CheckBoxHelper.CheckedBackground="#99999999" />            
+            <pu:DropDown 
+                HorizontalAlignment="Left"
+                VerticalAlignment="Top">
+                <Grid>
+                    <Button Content="&#xf0ac;"
+                        FontFamily="{StaticResource FontAwesome}"
+                        pu:ButtonHelper.ButtonStyle="Hollow"
+                        pu:ButtonHelper.CornerRadius="30"
+                        pu:ButtonHelper.HoverBrush="#99999999"
+                        Margin="0,8,10,0"
+                        Width="30"
+                        BorderThickness="0"
+                        Foreground="#3E3E3E"
+                        FontSize="20" />    
+                </Grid>
+                <pu:DropDown.Child>
+                    <Grid Height="170"
+                      Width="200"
+                      >
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="30"></RowDefinition>
+                            <RowDefinition></RowDefinition>
+                        </Grid.RowDefinitions>
+                        <Button Content="&#xf01b;"
+                        FontFamily="{StaticResource FontAwesome}"
+                        pu:ButtonHelper.ButtonStyle="Hollow"
+                        pu:ButtonHelper.CornerRadius="20"
+                        pu:ButtonHelper.HoverBrush="#99999999"
+                        Margin="2,0"
+                        HorizontalAlignment="Right"
+                        Width="25"
+                        Height="25"
+                        BorderThickness="0"
+                        Foreground="#3E3E3E"
+                        FontSize="20" 
+                        Command="{Binding ImportMap}"
+                       />
+                        <ListBox Name="MapList" Grid.Row="1" 
+                             ItemsSource="{Binding MapConfigAttributes}"
+                             SelectedItem="{Binding MapSelectedItem}"
+                             pu:ListBoxHelper.HoverBackground="AliceBlue"
+                             pu:ListBoxHelper.HoverForeground="Blue"
+                             pu:ListBoxHelper.SelectedBackground="AliceBlue"
+                             pu:ListBoxHelper.SelectedForeground="Blue"
+                             >
+                            <ListBox.ItemContainerStyle>
+                                <Style TargetType="{x:Type ListBoxItem}">
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                                                <Border Name="BdrSelected" Background="#01000000">
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition></ColumnDefinition>
+                                                            <ColumnDefinition Width="20"></ColumnDefinition>
+                                                            <ColumnDefinition Width="20"></ColumnDefinition>
+                                                        </Grid.ColumnDefinitions>
+                                                        <TextBlock Name="BdrText" Width="auto" Text="{Binding MapName}" Margin="0,5" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                                                        <Button 
+                                                        Grid.Column="1"
+                                                        Content="&#xf040;"
+                                                        FontFamily="{StaticResource FontAwesome}"
+                                                        pu:ButtonHelper.ButtonStyle="Hollow"
+                                                        pu:ButtonHelper.CornerRadius="16"
+                                                        pu:ButtonHelper.HoverBrush="#99999999"
+                                                        Margin="2,0"
+                                                        HorizontalAlignment="Right"
+                                                        Width="16"
+                                                        Height="16"
+                                                        BorderThickness="0"
+                                                        Foreground="#3E3E3E"
+                                                        FontSize="14"
+                                                        Command="{Binding DataContext.EditMapConfig,ElementName=frmWorkstation}" 
+                                                        CommandParameter="{Binding MapName}"
+                                                        />
+                                                        <Button 
+                                                        Grid.Column="2"
+                                                        Content="&#xf014;"
+                                                        FontFamily="{StaticResource FontAwesome}"
+                                                        pu:ButtonHelper.ButtonStyle="Hollow"
+                                                        pu:ButtonHelper.CornerRadius="16"
+                                                        pu:ButtonHelper.HoverBrush="#99999999"
+                                                        Margin="2,0"
+                                                        HorizontalAlignment="Right"
+                                                        Width="16"
+                                                        Height="16"
+                                                        BorderThickness="0"
+                                                        Foreground="#3E3E3E"
+                                                        FontSize="14"
+                                                        Command="{Binding DataContext.DeleteMap,ElementName=frmWorkstation}" 
+                                                        CommandParameter="{Binding MapName}"
+                                                        />
+                                                    </Grid>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsSelected" Value="True">
+                                                        <Setter TargetName="BdrSelected" Property="Background" Value="AliceBlue" />
+                                                        <Setter TargetName="BdrText" Property="Foreground" Value="Blue" />
+                                                    </Trigger>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="BdrSelected" Property="Background" Value="AliceBlue" />
+                                                        <Setter TargetName="BdrText" Property="Foreground" Value="Blue" />
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </ListBox.ItemContainerStyle>
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="SelectionChanged">
+                                    <i:InvokeCommandAction Command="{Binding SelectedMap}"/>
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                        </ListBox>
+                    </Grid>
+                </pu:DropDown.Child>
+            </pu:DropDown>
+        </StackPanel>
+    </pu:WindowXCaption.ExtendControl>
+    <Grid>
+        <mapControl:GMapControl x:Name="MapControl" ></mapControl:GMapControl>
+    </Grid>
+</pu:WindowX>
