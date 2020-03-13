@@ -1,0 +1,43 @@
+﻿<UserControl x:Class="MonitorPro.CameraMarker"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:pu="clr-namespace:Panuon.UI.Silver;assembly=Panuon.UI.Silver"
+             mc:Ignorable="d" 
+             d:DesignHeight="80" d:DesignWidth="230">
+    <Grid>
+        <pu:DropDown
+                Name="TextInfo"
+                IsOpen="{Binding DropDownShow,Mode=TwoWay}"
+                StaysOpen="False"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Top">
+            <Grid>
+                <Button Content="&#xf03d;"
+                        FontFamily="{StaticResource FontAwesome}"
+                        pu:ButtonHelper.ButtonStyle="Hollow"
+                        pu:ButtonHelper.CornerRadius="30"
+                        Width="50"
+                        Height="50"
+                        BorderThickness="0"
+                        Foreground="Blue"
+                        FontSize="40" />
+            </Grid>
+            <pu:DropDown.Child>
+                <Grid Height="200"
+                      Width="300">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="50"></ColumnDefinition>
+                        <ColumnDefinition></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="50"></RowDefinition>
+                        <RowDefinition></RowDefinition>
+                        <RowDefinition Height="50"></RowDefinition>
+                    </Grid.RowDefinitions>
+                </Grid>
+            </pu:DropDown.Child>
+        </pu:DropDown>
+    </Grid>
+</UserControl>

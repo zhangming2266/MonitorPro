@@ -22,12 +22,13 @@ namespace MonitorPro
 {
     public class MonitorViewModel : PropertyChangedBase
     {
-
+        
         private GMapOverlay TextMarker;
-        private GmapGpsOverlay CameraMarker;
+        private GMapOverlay CameraMarker;
         private bool MarkerLayerLoaded = false;
         private MonitorWnd monitorWnd;
         private ObservableCollectionThreadSafe<GMapMarker> TextMarkerList;
+        private ObservableCollectionThreadSafe<GMapMarker> CameraMarkerList;
         private EditMapConfigViewModel editMapConfigViewModel;
         public MonitorViewModel(MonitorWnd monitorWindow)
         {
@@ -35,8 +36,23 @@ namespace MonitorPro
             monitorWnd.Closed += MonitorWnd_Closed;
             MapConfigAttributes = new ObservableCollection<MapConfigAttribute>();
             TextMarkerList = new ObservableCollectionThreadSafe<GMapMarker>();
+            CameraMarkerList = new ObservableCollectionThreadSafe<GMapMarker>();
             monitorWnd.MapControl.Loaded += MapControl_Loaded;
             monitorWnd.MapControl.MouseUp += MapControl_MouseUp;
+        }
+
+        private ObservableCollection<LayerInfo> _MarkerLayers = new ObservableCollection<LayerInfo>();
+        public ObservableCollection<LayerInfo> MarkerLayers
+        {
+            get
+            {
+                return _MarkerLayers;
+            }
+            set
+            {
+                _MarkerLayers = value;
+                NotifyPropertyChanged();
+            }
         }
 
         private ObservableCollection<MapConfigAttribute> _MapConfigAttributes;
@@ -64,8 +80,42 @@ namespace MonitorPro
             {
                 _MapSelectedItem = value;
                 LoadMap();
+                LoadCamera();
             }
         }
+
+        #region 加载摄像头
+
+
+        private double random()
+        {
+            var seed = Guid.NewGuid().GetHashCode();
+            Random r = new Random(seed);
+            int i = r.Next(0, 100000);
+            return (double)i / 100000;
+        }
+
+        private void LoadCamera()
+        {
+            if(CameraMarker != null)
+            {
+                for(var i = 0; i < 100; i++)
+                {
+                    var lat = 103 + random();
+                    var lng = 30 + random();
+                    var cameraInfoMarker = new GMapMarker(new PointLatLng(lng, lat));
+                    {
+                        cameraInfoMarker.Shape = new CameraMarker();
+                        cameraInfoMarker.Offset = new System.Windows.Point(-15, -15);
+                        cameraInfoMarker.ZIndex = int.MaxValue;
+                        CameraMarker.Markers.Add(cameraInfoMarker);
+                    }
+                    CameraMarkerList.Add(cameraInfoMarker);
+                }
+            }
+        }
+
+        #endregion
         #region 窗口关闭
         private void MonitorWnd_Closed(object sender, EventArgs e)
         {
@@ -181,10 +231,20 @@ namespace MonitorPro
                     monitorWnd.MapControl.DragButton = MouseButton.Left;
                     if (!MarkerLayerLoaded)
                     {
-                        CameraMarker = new GmapGpsOverlay("cameraMarkerLayer");
+                        CameraMarker = new GMapOverlay("cameraMarkerLayer");
                         monitorWnd.MapControl.Overlays.Add(CameraMarker);
                         TextMarker = new GMapOverlay("textMarkerLayer");
                         monitorWnd.MapControl.Overlays.Add(TextMarker);
+                        var layerGamera = new LayerInfo();
+                        layerGamera.GMapOverlayLayer = CameraMarker;
+                        layerGamera.LayerName = "摄像头图层";
+
+                        var layerText = new LayerInfo();
+                        layerText.GMapOverlayLayer = TextMarker;
+                        layerText.LayerName = "标注图层";
+
+                        MarkerLayers.Add(layerGamera);
+                        MarkerLayers.Add(layerText);
                         MarkerLayerLoaded = true;
                     }
                     Notice.Show("地图加载成功！", "地图消息", 3, MessageBoxIcon.Success);
