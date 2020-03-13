@@ -15,7 +15,7 @@
     <Deterministic>true</Deterministic>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x64</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -23,6 +23,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -72,6 +73,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Commands\RelayCommand.cs" />
+    <Compile Include="Controls\EditMapConfigWnd.xaml.cs">
+      <DependentUpon>EditMapConfigWnd.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\TextMarker.xaml.cs">
       <DependentUpon>TextMarker.xaml</DependentUpon>
     </Compile>
@@ -79,8 +83,13 @@
     <Compile Include="Helper\IniHelper.cs" />
     <Compile Include="Models\MapConfigAttribute.cs" />
     <Compile Include="Models\TextMarkerInfo.cs" />
+    <Compile Include="ViewModels\EditMapConfigViewModel.cs" />
     <Compile Include="ViewModels\MonitorViewModel.cs" />
     <Compile Include="ViewModels\TextMarkerViewModel.cs" />
+    <Page Include="Controls\EditMapConfigWnd.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Controls\TextMarker.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

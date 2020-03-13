@@ -10,7 +10,7 @@
     pu:WindowXCaption.Padding="5"
     pu:WindowXCaption.Foreground="Black"
     pu:WindowXCaption.Background="AliceBlue"
-    pu:WindowXCaption.Header="摄像头管理系统"
+    pu:WindowXCaption.Header=""
     DisableForceClosing ="true"
     FontSize="20"
     Name="frmWorkstation"
@@ -29,8 +29,13 @@
                 pu:CheckBoxHelper.CornerRadius="20"
                 pu:CheckBoxHelper.CheckBoxStyle="Button"
                 pu:CheckBoxHelper.HeaderWidth="0"
-                pu:CheckBoxHelper.CheckedBackground="#99999999" />            
-            <pu:DropDown 
+                pu:CheckBoxHelper.CheckedBackground="#99999999">
+                <CheckBox.ToolTip>
+                    地图标注
+                </CheckBox.ToolTip>
+            </CheckBox>            
+            <pu:DropDown
+                ToolTip="地图设置"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Top">
                 <Grid>
@@ -43,7 +48,8 @@
                         Width="30"
                         BorderThickness="0"
                         Foreground="#3E3E3E"
-                        FontSize="20" />    
+                        FontSize="20" >
+                    </Button>
                 </Grid>
                 <pu:DropDown.Child>
                     <Grid Height="170"

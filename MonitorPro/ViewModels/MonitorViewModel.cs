@@ -28,6 +28,7 @@ namespace MonitorPro
         private bool MarkerLayerLoaded = false;
         private MonitorWnd monitorWnd;
         private ObservableCollectionThreadSafe<GMapMarker> TextMarkerList;
+        private EditMapConfigViewModel editMapConfigViewModel;
         public MonitorViewModel(MonitorWnd monitorWindow)
         {
             monitorWnd = monitorWindow;
@@ -108,6 +109,14 @@ namespace MonitorPro
                 }
                 TextMarkerList.Add(textInfoMarker);
             }
+            if (editMapConfigViewModel != null && editMapConfigViewModel.PickCenter)
+            {
+                var pt = e.GetPosition(monitorWnd.MapControl);
+                var lngLatPt = monitorWnd.MapControl.FromLocalToLatLng((int)pt.X, (int)pt.Y);
+                editMapConfigViewModel.CenterLat = lngLatPt.Lng;
+                editMapConfigViewModel.CenterLng = lngLatPt.Lat;
+                editMapConfigViewModel.PickCenter = false;
+            }
         }
 
         private void TextMarkerViewModel_DeleteMarkerEvent(object sender, TextMarkerInfo e)
@@ -167,7 +176,8 @@ namespace MonitorPro
                     monitorWnd.MapControl.MinZoom = MapSelectedItem.MinZoom;
                     monitorWnd.MapControl.MaxZoom = MapSelectedItem.MaxZoom;
                     monitorWnd.MapControl.Zoom = MapSelectedItem.Zoom;
-                    monitorWnd.MapControl.Position = new PointLatLng(boundsOfMap.LocationMiddle.Lng, boundsOfMap.LocationMiddle.Lat);
+                    var center = MapSelectedItem.Center.Split(',');
+                    monitorWnd.MapControl.Position = new PointLatLng(double.Parse(center[1]), double.Parse(center[0]));
                     monitorWnd.MapControl.DragButton = MouseButton.Left;
                     if (!MarkerLayerLoaded)
                     {
@@ -192,6 +202,10 @@ namespace MonitorPro
         {
 
             var path = AppDomain.CurrentDomain.BaseDirectory + @"caches\TileDBv5\en";
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
             var mapfiles = Directory.GetFiles(path);
             foreach (var mapfile in mapfiles)
             {
@@ -207,12 +221,14 @@ namespace MonitorPro
                         var zoom = iniHelper.IniReadValue("地图配置", "zoom");
                         var bounds = iniHelper.IniReadValue("地图配置", "bounds");
                         var mapProvider = iniHelper.IniReadValue("地图配置", "mapProvider");
+                        var center = iniHelper.IniReadValue("地图配置", "center");
                         MapConfigAttribute mapConfigAttribute = new MapConfigAttribute();
                         mapConfigAttribute.MapName = mapName;
                         mapConfigAttribute.MinZoom = int.Parse(minZoom);
                         mapConfigAttribute.MaxZoom = int.Parse(maxZoom);
                         mapConfigAttribute.Zoom = int.Parse(zoom);
                         mapConfigAttribute.MapBound = bounds;
+                        mapConfigAttribute.Center = center;
                         mapConfigAttribute.MapProvider = mapProvider;
                         MapConfigAttributes.Add(mapConfigAttribute);
                     }
@@ -226,29 +242,37 @@ namespace MonitorPro
 
         private void LoadMarkerConfig()
         {
-            var path = AppDomain.CurrentDomain.BaseDirectory + "markers\\marker.txt";
-            StreamReader sr = new StreamReader(path, Encoding.UTF8);
-            String line;
-            while ((line = sr.ReadLine()) != null)
+            var dirPath = AppDomain.CurrentDomain.BaseDirectory + "markers";
+            if (!Directory.Exists(dirPath))
             {
-                var text = line.ToString();
-                var textMarkerString = text.Split(';');
-                var textMarker = new TextMarker();
-                textMarker.textMarkerViewModel.DropDownShow = false;
-                textMarker.textMarkerViewModel.TextShow = true;
-                textMarker.textMarkerViewModel.TextTitle = textMarkerString[2];
-                textMarker.textMarkerViewModel.TextContent = textMarkerString[3].Replace("*#*#", "\r\n");
-                var lngLatPt = new PointLatLng(double.Parse(textMarkerString[0]), double.Parse(textMarkerString[1]));
-                var textInfoMarker = new GMapMarker(lngLatPt);
+                Directory.CreateDirectory(dirPath);
+            }
+            var path = AppDomain.CurrentDomain.BaseDirectory + "markers\\marker.txt";
+            if (File.Exists(path))
+            {
+                StreamReader sr = new StreamReader(path, Encoding.UTF8);
+                String line;
+                while ((line = sr.ReadLine()) != null)
                 {
-                    textInfoMarker.Shape = textMarker;
-                    textInfoMarker.Tag = textMarker.textMarkerViewModel.textMarkerInfo.ID;
-                    textInfoMarker.Offset = new System.Windows.Point(-15, -15);
-                    textInfoMarker.ZIndex = int.MaxValue;
-                    TextMarker.Markers.Add(textInfoMarker);
-                    textMarker.textMarkerViewModel.DeleteMarkerEvent += TextMarkerViewModel_DeleteMarkerEvent;
+                    var text = line.ToString();
+                    var textMarkerString = text.Split(';');
+                    var textMarker = new TextMarker();
+                    textMarker.textMarkerViewModel.DropDownShow = false;
+                    textMarker.textMarkerViewModel.TextShow = true;
+                    textMarker.textMarkerViewModel.TextTitle = textMarkerString[2];
+                    textMarker.textMarkerViewModel.TextContent = textMarkerString[3].Replace("*#*#", "\r\n");
+                    var lngLatPt = new PointLatLng(double.Parse(textMarkerString[0]), double.Parse(textMarkerString[1]));
+                    var textInfoMarker = new GMapMarker(lngLatPt);
+                    {
+                        textInfoMarker.Shape = textMarker;
+                        textInfoMarker.Tag = textMarker.textMarkerViewModel.textMarkerInfo.ID;
+                        textInfoMarker.Offset = new System.Windows.Point(-15, -15);
+                        textInfoMarker.ZIndex = int.MaxValue;
+                        TextMarker.Markers.Add(textInfoMarker);
+                        textMarker.textMarkerViewModel.DeleteMarkerEvent += TextMarkerViewModel_DeleteMarkerEvent;
+                    }
+                    TextMarkerList.Add(textInfoMarker);
                 }
-                TextMarkerList.Add(textInfoMarker);
             }
         }
         #endregion
@@ -422,6 +446,10 @@ namespace MonitorPro
                 mapConfigAttribute.MapBound = bounds;
                 mapConfigAttribute.MapProvider = mapProvider;
                 MapConfigAttributes.Add(mapConfigAttribute);
+                if(MapSelectedItem == null)
+                {
+                    MapSelectedItem = MapConfigAttributes[0];
+                }
             }
             Notice.Show("离线地图(" + mapName + ")导入成功！", "地图消息", 3, MessageBoxIcon.Success);
         }
@@ -447,8 +475,28 @@ namespace MonitorPro
             {
                 return new RelayCommand(new Action<Object>(t =>
                 {
-
+                    EditMapConfigWnd editMapConfigWnd = new EditMapConfigWnd(t.ToString());
+                    editMapConfigWnd.editMapConfigViewModel.EditMapConfigHander += EditMapConfigViewModel_EditMapConfigHander;
+                    editMapConfigWnd.editMapConfigViewModel.PickLatlngHander += EditMapConfigViewModel_PickLatlngHander;
+                    editMapConfigWnd.Show();
                 }));
+            }
+        }
+
+        private void EditMapConfigViewModel_PickLatlngHander(object sender, bool e)
+        {
+            editMapConfigViewModel = sender as EditMapConfigViewModel;
+        }
+
+        private void EditMapConfigViewModel_EditMapConfigHander(object sender, MapConfigAttribute e)
+        {
+            if(MapSelectedItem != null && MapSelectedItem.MapName == e.MapName)
+            {
+                MapSelectedItem.Zoom = e.Zoom;
+                MapSelectedItem.MaxZoom = e.MaxZoom;
+                MapSelectedItem.MinZoom = e.MinZoom;
+                MapSelectedItem.Center = e.Center;
+                LoadMap();
             }
         }
         #endregion
