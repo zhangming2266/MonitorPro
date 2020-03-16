@@ -10,7 +10,7 @@
     pu:WindowXCaption.Padding="5"
     pu:WindowXCaption.Foreground="Black"
     pu:WindowXCaption.Background="AliceBlue"
-    pu:WindowXCaption.Header=""
+    pu:WindowXCaption.Header="摄像头管理系统"
     DisableForceClosing ="true"
     FontSize="20"
     Name="frmWorkstation"
@@ -124,7 +124,11 @@
                         Foreground="#3E3E3E"
                         FontSize="20" 
                         Command="{Binding ImportMap}"
-                       />
+                       >
+                            <Button.ToolTip>
+                                地图导入
+                            </Button.ToolTip>
+                        </Button>
                         <ListBox Name="MapList" Grid.Row="1" 
                              ItemsSource="{Binding MapConfigAttributes}"
                              SelectedItem="{Binding MapSelectedItem}"
